@@ -204,6 +204,8 @@ from tb_class_professor
 group by class_no
 having count(*) >=2
 order by 2 desc;
+
+
 --4. 학과별로 과목을 구분했을때, 과목구분이 "전공선택"에 한하여 과목수가 10개 이상인 행의 학과번호, 과목구분(class_type), 과목수를 조회(전공선택만 조회)
 
 
@@ -217,64 +219,36 @@ having class_type = '전공선택' and count(*)>= 10
 order by 3 desc;
 
 
---1. 영어영문학과(학과코드 002) 학생들의 학번과 이름, 입학 년도를 입학 년도가 빠른
---순으로 표시하는 SQL 문장을 작성하시오.( 단, 헤더는 "학번", "이름", "입학년도" 가
---표시되도록 한다.)
-/*
-학번              이름                          입학년도
-----------    -------------------- -----------
-9973003  김용근귺                 1999-03-01
-A473015  배용원                     2004-03-01
-A517105  이신열                     2005-03-01
-*/
 
-SELECT student_no 학번, student_name 이름, to_char(entrance_date, 'yyyy-mm-dd') 입학년도
+
+-- 학번/학생명tb_student/담당교수명 조회
+-- 1. 두테이블의 기준컬럼 파악.
+-- 2. on조건절에 해당되지 않는 데이터파악.
+
+select *
+from tb_student; --교수이름이 X = coach_professor_no
+select *
+from tb_professor; -- 학생이름이 X = professor_no
+
+--담당교수 담당학생이 배정되지 않은 학생이나 교수 제외 inner 579
+--담당교수가 배정되지 않은 학생 포함 left 588 = 579+9
+-- 담당학생이 없는 교수 포함 right 580 = 579+1
+
+select *
+from tb_student S  join tb_professor P
+        on S.coach_professor_no = P.professor_no;
+
+--1. 교수 배정받지 않은 학생 조회 -- 9
+select count(*)
 from tb_student
-where department_no  = '002'
-order by entrance_date asc;
+where coach_professor_no is null;
 
---2. 춘 기술대학교의 교수 중 이름이 세 글자가 아닌 교수가 한 명 있다고 한다. 그 교수의
---이름과 주민번호를 화면에 출력하는 SQL 문장을 작성해 보자. (* 이때 올바르게 작성핚 SQL 
---문장의 결과 값이 예상과 다르게 나올 수 있다. 원인이 무엇일지 생각해볼 것)
-/*
-PROFESSOR_NAME        PROFESSOR_SSN
---------------------           ----------------
-강혁                                      601004-1100528
-박강아름                              681201-2134896
-*/
+-- 2. 담당학생이 한명도 없는 교수
+-- 전체 교수 수
 
-select professor_name,professor_ssn
-from tb_professor
-where length(professor_name)!=3;
-
---3. 춘 기술대학교의 남자 교수들의 이름과 나이를 출력하는 SQL 문장을 작성하시오. 단
---이때 나이가 적은 사람에서 많은 사람 순서로 화면에 출력되도록 만드시오. (단, 교수 중
---2000 년 이후 출생자는 없으며 출력 헤더는 "교수이름", "나이"로 한다. 나이는 ‘만’으로
---계산한다.)
-/*
-교수이름                     나이
--------------------- ----------
-제상철                         28
-주영상                         28
-김명석                         30
-신영호                         30
-박지평                         32
-…
-75 rows selected
-*/
-/*
---나이 추출시 주의점
---현재년도 - 탄생년도 + 1 => 한국식 나이
---select emp_name,
---            emp_no,
---            substr(emp_no, 1, 2),
-----            extract(year from to_date(substr(emp_no, 1, 2), 'yy')),
-----           extract(year from sysdate) -  extract(year from to_date(substr(emp_no, 1, 2), 'yy')) + 1,
-----           extract(year from to_date(substr(emp_no, 1, 2), 'rr')),
-----           extract(year from sysdate) -  extract(year from to_date(substr(emp_no, 1, 2), 'rr')) + 1
---            extract(year from sysdate) -
---            (decode(substr(emp_no, 8, 1), '1', 1900, '2', 1900, 2000) + substr(emp_no, 1, 2)) + 1 age
---from employee;*/
-select professor_name,professor_ssn
+select count(*) -- 114
 from tb_professor;
-               
+
+-- 중복 없는 담당교수 수 --113
+SELECT count(distinct coach_professor_no)
+from tb_student;
