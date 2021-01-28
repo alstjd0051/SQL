@@ -15,6 +15,8 @@ from tb_student
 where department_no  = '002'
 order by entrance_date asc;
 
+
+
 --2. 춘 기술대학교의 교수 중 이름이 세 글자가 아닌 교수가 한 명 있다고 한다. 그 교수의
 --이름과 주민번호를 화면에 출력하는 SQL 문장을 작성해 보자. (* 이때 올바르게 작성핚 SQL 
 --문장의 결과 값이 예상과 다르게 나올 수 있다. 원인이 무엇일지 생각해볼 것)
@@ -217,8 +219,150 @@ order by 1;
 --3.2
 
 select nvl(substr(term_no, 1, 4), ' ') 년도,
-       nvl(substr(term_no, 5, 6), ' ') 학기,
-       round(avg(point), 1) 평점
+            nvl(substr(term_no, 5, 6), ' ') 학기,
+            round(avg(point), 1) 평점
 from tb_grade
 where student_no = 'A112113'
 group by rollup((substr(term_no, 1, 4)), substr(term_no, 5, 6));
+
+
+-------------------------------------------------------------------------------------------
+--강사풀이-
+-------------------------------------------------------------------------------------------
+--# Additional SELECT - 함수
+
+--1.
+SELECT STUDENT_NO AS 학번,
+       STUDENT_NAME AS 이름,
+          TO_CHAR(ENTRANCE_DATE, 'RRRR-MM-DD') AS 입학년도
+FROM   TB_STUDENT
+WHERE  DEPARTMENT_NO='002'
+ORDER BY ENTRANCE_DATE;
+
+--2.
+SELECT PROFESSOR_NAME , 
+       PROFESSOR_SSN
+FROM   TB_PROFESSOR
+WHERE  PROFESSOR_NAME NOT LIKE '___';
+
+--3.
+SELECT PROFESSOR_NAME AS 교수이름,
+       TO_NUMBER(TO_CHAR(SYSDATE, 'YYYY')) - TO_NUMBER('19' || SUBSTR(PROFESSOR_SSN, 1, 2)) AS 나이,
+       TRUNC(
+        MONTHS_BETWEEN(
+            SYSDATE,  
+            TO_DATE('19' ||SUBSTR(PROFESSOR_SSN, 1, 6),'RRRRMMDD'))/12
+       ) 만나이
+FROM   TB_PROFESSOR
+WHERE  SUBSTR(PROFESSOR_SSN, 8, 1) = '1'
+ORDER BY 2, 1;
+
+--4.
+SELECT SUBSTR(PROFESSOR_NAME, 2) AS 이름
+FROM   TB_PROFESSOR;
+
+--5.
+SELECT  STUDENT_NO,
+        STUDENT_NAME
+FROM    TB_STUDENT
+WHERE   TO_NUMBER(TO_CHAR(ENTRANCE_DATE, 'YYYY'))  - TO_NUMBER(TO_CHAR(TO_DATE(SUBSTR(STUDENT_SSN, 1, 2), 'RR'), 'YYYY')) > 19
+ORDER BY 1;
+
+
+--6.
+SELECT TO_CHAR(TO_DATE('2020/12/25'), 'YYYYMMDD DAY') 
+FROM DUAL;
+
+--7.
+--RRRR YYYY
+--RR YY
+--YY : 현재년도기준으로 한세기(00~99)에서 판단. 2020 -> 2000 ~ 2099
+--RR : 현재년도기준으로 한세기(50~49)에서 판단. 2020 -> 1950 ~ 2049,  2060 -> 2050 ~ 2149
+
+SELECT TO_CHAR(TO_DATE('99/10/11', 'YY/MM/DD'), 'YYYY') FROM DUAL; --2099
+SELECT TO_CHAR(TO_DATE('49/10/11', 'YY/MM/DD'), 'YYYY') FROM DUAL; --2049
+SELECT TO_CHAR(TO_DATE('99/10/11', 'RR/MM/DD'), 'YYYY') FROM DUAL; -- 1999
+SELECT TO_CHAR(TO_DATE('49/10/11', 'RR/MM/DD'), 'YYYY') FROM DUAL; -- 2049
+
+/*
+TO_DATE('99/10/11', 'YY/MM/DD') : 2099년 10월 11일
+TO_DATE('49/10/11', 'YY/MM/DD') : 2049년 10월 11일
+TO_DATE('99/10/11', 'RR/MM/DD') : 1999년 10월 11일
+TO_DATE('49/10/11', 'RR/MM/DD') : 2049년 10월 11일
+*/
+
+--8.
+SELECT STUDENT_NO,
+       STUDENT_NAME
+FROM   TB_STUDENT
+WHERE  SUBSTR(STUDENT_NO, 1, 1) <> 'A'
+ORDER BY 1;
+
+--9. 
+SELECT ROUND(AVG(POINT), 1) AS 평점 
+FROM   TB_GRADE
+WHERE  STUDENT_NO = 'A517178';
+
+--10.
+SELECT DEPARTMENT_NO AS 학과번호,
+       COUNT(*) AS "학생수(명)"
+FROM   TB_STUDENT
+GROUP BY DEPARTMENT_NO
+ORDER BY 1;
+
+--11.
+SELECT COUNT(*)
+FROM   TB_STUDENT
+WHERE COACH_PROFESSOR_NO IS NULL;
+
+
+
+--12.
+SELECT SUBSTR(TERM_NO, 1 ,4) AS 년도,
+       ROUND(AVG(POINT), 1) AS "년도 별 평점" 
+FROM   TB_GRADE
+WHERE  STUDENT_NO = 'A112113'
+GROUP BY SUBSTR(TERM_NO, 1, 4);
+
+--13.
+SELECT DEPARTMENT_NO AS 학과코드명,
+       SUM(CASE WHEN ABSENCE_YN ='Y' THEN 1 
+              ELSE 0 END) AS "휴학생 수"
+FROM   TB_STUDENT
+GROUP BY DEPARTMENT_NO
+--ORDER BY 1
+;
+
+--14.
+SELECT STUDENT_NAME AS 동일이름,
+       COUNT(*)     AS "동명인 수"
+FROM   TB_STUDENT
+GROUP BY STUDENT_NAME
+HAVING COUNT(*) > 1;
+
+--15.
+--grouping : 실제 데이터 0, 집계데이터 1
+select decode(grouping(substr(term_no, 1, 4)), 0, substr(term_no, 1, 4), ' ') 년도,
+       decode(grouping(substr(term_no, 5, 2)), 0, substr(term_no, 5, 2), ' ') 학기,
+       round(avg(point), 1) 평점
+from tb_grade
+where  student_no = 'A112113'
+group by rollup(substr(term_no, 1, 4), substr(term_no, 5, 2));
+
+--DECODE이용
+SELECT DECODE(GROUPING(SUBSTR(TERM_NO, 1, 4)),0,SUBSTR(TERM_NO, 1, 4),1,'총평점') AS 년도,
+        DECODE(GROUPING(SUBSTR(TERM_NO, 5, 2)),0,SUBSTR(TERM_NO, 5, 2),1,'연별누적평점') AS 학기,
+        ROUND(AVG(POINT), 1) AS 평점
+FROM   TB_GRADE
+WHERE  STUDENT_NO = 'A112113'
+GROUP BY ROLLUP(SUBSTR(TERM_NO, 1, 4),SUBSTR(TERM_NO, 5, 2));
+
+--CASE이용
+SELECT DECODE(GROUPING(SUBSTR(TERM_NO, 1, 4)),0,SUBSTR(TERM_NO, 1, 4),1,'총평점') AS 년도,
+        CASE WHEN GROUPING(SUBSTR(TERM_NO, 1, 4)) = 1 AND GROUPING(SUBSTR(TERM_NO, 5, 2))=1 THEN ' '
+              WHEN GROUPING(SUBSTR(TERM_NO, 5, 2)) = 1 THEN '연별누적평점'
+              ELSE SUBSTR(TERM_NO, 5, 2) END AS 구분,
+        ROUND(AVG(POINT), 1) AS 평점
+FROM   TB_GRADE
+WHERE  STUDENT_NO = 'A112113'
+GROUP BY ROLLUP(SUBSTR(TERM_NO, 1, 4),SUBSTR(TERM_NO, 5, 2));
