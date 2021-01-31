@@ -21,7 +21,12 @@ order by d.department_name;
 
 -- 4. 이름이 [~람]인 학생의 평균학점을 구해서 학생명과 평균학점(반올림해서 소수점둘째자리까지)과 같이 출력.
 -- (동명이인일 경우에 대비해서 student_name만으로 group by 할 수 없다.)
-
+select 
+        s.student_name 학생명,
+        round(avg(g.point),2)
+from tb_student s left join tb_grade g on s.student_no = g.student_no
+where s.student_name like '%람'
+group by s.student_no, s.student_name;
 
 --5. 학생별 다음정보를 구하라.
 /*
@@ -34,3 +39,19 @@ order by d.department_name;
 --------------------------------------------
 
 */
+select 
+    s.student_name 학생명,
+    g.term_no 학기,
+    c.class_name 과목명,
+    g.point 학점
+from tb_student s, tb_grade g, tb_class c
+where s.student_no = g.student_no(+)
+    and g.class_no = c.class_no
+order by 학생명, 학기, 과목명;
+
+
+select * from tb_student;
+select * from tb_class;
+select * from tb_grade;
+
+
