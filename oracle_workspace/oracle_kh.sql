@@ -1360,7 +1360,17 @@ from department;
 select *
 from employee E join job J
         on E.job_code = J.job_code;
-        
+    
+    
+--(oracle) ,(콤마)로 구분한다. where절에 추가로 필요하다면 and로 추가
+select *
+from employee E, department D
+where E.dept_code = D.dept_id and E.dept_code = 'D5';
+
+select *
+from employee E,  job J
+where E.job_code = J.job_code;
+
 --------------------------------------------------------------------------------------------------------------------
 -- OUTER JOIN
 --------------------------------------------------------------------------------------------------------------------
@@ -1373,6 +1383,12 @@ select *
 from employee E left outer join department D
     on E.dept_code  = D.dept_id;
     
+-- (oracle)
+-- 기준테이블의 반대편 컬럼에 (+)를 추가
+select *
+from employee E, department D
+where E.dept_code = D.dept_id(+);
+    
 --2.RIGHT (OUTER) JOIN
 -- 우측테이블 기준
 -- 우측테이블 모든 행이 포함, 좌측테이블에는 On 조건절에 만족하는 행만 포함.
@@ -1381,6 +1397,11 @@ from employee E left outer join department D
 select *
 from employee E right join department D
         on E.dept_code = D.dept_id;
+ -- (oracle)
+-- 기준테이블의 반대편 컬럼에 (+)를 추가 
+select *
+from department D, employee E 
+where d.dept_id =  e.dept_code(+);
         
 --3. FULL(OUTER) JOIN
 -- 완전 조인
@@ -1390,11 +1411,16 @@ select *
 from employee E full join department D
         on E.dept_code = D.dept_id;
         
+        
+--(oracle)에서는 full outer join을 지원하지 않는다.
 
 -- 사원명/부서명 조회시
 -- 부서지정이 안된 사원은 제외한다면 inner join으로 충분
 -- 부서지정이 안되도 포함시켜준다면 left join
 -- 사원부원도 안된 부서도 포함시켜야한다면 right join
+
+
+
 
 
 --------------------------------------------------------------------------------------------------------------------
@@ -1403,9 +1429,15 @@ from employee E full join department D
 --상호조인.
 --ON조건절 없이, 좌측테이블 행과 우측테이블의 행이 연결될 수 있는 모든 경우의 수를 포함한 결과 집합을 리턴.
 
---216? = 24 * 9
+--216  = 24 * 9
 SELECT*
 FROM employee E cross join department D;
+
+--(oracle)
+SELECT*
+FROM employee E ,department D;
+
+
 
 -- 일반컬럼, 그룹함수 결과를 함께 보고자 할때.
 
@@ -1431,7 +1463,18 @@ select E1.emp_id, E1.emp_name,E1.manager_id,
 from employee E1 join employee E2 
         on E1.manager_id = E2.emp_id;
 
-        
+    
+    
+    --(oracle)
+    select E1.emp_id,
+                E1.emp_name,
+                E1.manager_id,
+                E2.emp_name
+    from employee E1, employee E2
+    where E1.manager_id = E2.emp_id;
+    
+    
+    
 --------------------------------------------------------------------------------------------------------------------
 --MULTIPLE JOIN
 -- it is easy
@@ -1459,11 +1502,30 @@ from employee E
     join location L
         on D.location_id = L.local_code
         join job J
-        on E.job_code = J.job_code
+        on E.job_code = J.job_code;
 --where E.emp_name = '송종기';
 
 --조인하는 순서를 잘 고려할 것.
 -- left join으로 시작했으면, 끝까지 유지해줘야 데이터가 누락되지 않는 경우가 있다.
+
+
+
+--(oracle)
+select *
+from employee E, department D, location L, job J
+where E.dept_code = D.dept_id(+)
+        and D.location_id = L.local_code(+)
+        and E.job_code = J.job_code;
+
+
+
+
+
+
+
+
+
+
 
 
 -- 직급이 대리, 과장이면서 ASIA지역에 근무하는 사원 조회
