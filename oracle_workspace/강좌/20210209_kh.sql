@@ -381,14 +381,11 @@ begin
     --실행코드
 end;
 /
-
 - 행레벨 트리거 : 원DML문(10번)이 처리되는 행마다 trigger실행(10번)
 - 문장레벨 트리거 : 원 DML문이 실행시 trigger 한번 실행
-
 의사 pseudo 레코드 (행레벨트리거에서만 유효)
 - :old = 원DML문 실행전 데이터
 - :new = 원DML문 실행후 데이터
-
 insert
     :old null
     :new 추가된 데이터

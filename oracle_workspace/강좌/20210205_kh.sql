@@ -119,7 +119,7 @@ rename to miiin_sseong;
 
 rename miiin_sseong to tb_alter_all_new;
 
-select * from tb_alter_all_new;
+select * from miiin_sseong;
 
 -------------------------------------------------------------------------------
 -- DROP
