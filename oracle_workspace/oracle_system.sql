@@ -57,4 +57,9 @@ grant connect, resource to chun;
 --DataDictionary db의 각 객체에 대한 메타정보를 확인할 수 있는 road-only 테이블
 select *
 from dba_sys_privs
-where grantee in('CONNECT',RESOURCE') ;
+where grantee in('CONNECT',RESOURCE) ;
+
+
+-- create view 권한을 부여 받아야한다.
+--resource 롤에 포함되지 않는다
+grant create view to kh;
